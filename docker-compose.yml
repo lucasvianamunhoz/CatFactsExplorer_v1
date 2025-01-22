@@ -1,0 +1,62 @@
+﻿services:
+  catfactsexplorer.api:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__MSSQL=Server=mssql;Database=CatFactsExplorerDb;User Id=SA;Password=Your_password123;Encrypt=True;TrustServerCertificate=True;
+    build:
+      context: .  
+      dockerfile: src/CatFactsExplorer.API/Dockerfile.api
+    ports:
+      - "5001:80"
+
+  catfactsexplorer.worker:
+    build:
+      context: .  
+      dockerfile: src/CatFactsExplorer.Worker/Dockerfile.worker   
+    environment:
+      - ConnectionStrings__MSSQL=Server=mssql;Database=CatFactsExplorerDb;User Id=SA;Password=Your_password123;Encrypt=True;TrustServerCertificate=True;
+    depends_on:
+      - mssql
+    ports:
+      - "5002:5002"  
+
+  catfactsexplorer.frontend:
+    build:
+       context: ./src/CatFactsExplorer.Frontend
+       dockerfile: Dockerfile.frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - catfactsexplorer.api
+
+
+  mssql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: catfactsexplorer_db
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=Your_password123
+    ports:
+      - "1433:1433"
+    volumes:
+      - mssql_data:/var/opt/mssql
+
+  mssql-init:
+    image: mcr.microsoft.com/mssql-tools:latest
+    container_name: mssql_init
+    depends_on:
+      - mssql
+    entrypoint: >
+      bash -c "
+      sleep 15 &&
+      /opt/mssql-tools/bin/sqlcmd -S mssql -U SA -P Your_password123 -d master -i /docker-entrypoint-initdb.d/init.sql
+      "
+    volumes:
+      - ./sql-scripts:/docker-entrypoint-initdb.d
+    restart: "no"  
+    deploy:
+      restart_policy:
+        condition: none   
+
+volumes:
+  mssql_data:

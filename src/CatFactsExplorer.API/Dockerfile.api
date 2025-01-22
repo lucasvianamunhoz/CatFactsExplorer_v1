@@ -1,0 +1,23 @@
+# Base para o build
+FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
+WORKDIR /app
+
+# Copiar os arquivos da solução
+COPY ./src/CatFactsExplorer.sln .
+COPY ./src/CatFactsExplorer.API/CatFactsExplorer.API.csproj ./CatFactsExplorer.API/
+COPY ./src/CatFactsExplorer.Infrastructure/CatFactsExplorer.Infrastructure.csproj ./CatFactsExplorer.Infrastructure/
+COPY ./src/CatFactsExplorer.Application/CatFactsExplorer.Application.csproj ./CatFactsExplorer.Application/
+COPY ./src/CatFactsExplorer.Domain/CatFactsExplorer.Domain.csproj ./CatFactsExplorer.Domain/
+
+# Restaurar dependências
+RUN dotnet restore ./CatFactsExplorer.API/CatFactsExplorer.API.csproj
+
+# Publicar a API
+COPY ./src/ .
+RUN dotnet publish ./CatFactsExplorer.API/CatFactsExplorer.API.csproj -c Release -o /out
+
+# Runtime
+FROM mcr.microsoft.com/dotnet/aspnet:7.0
+WORKDIR /app
+COPY --from=build /out .
+ENTRYPOINT ["dotnet", "CatFactsExplorer.API.dll"]

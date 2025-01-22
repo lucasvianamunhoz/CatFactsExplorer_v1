@@ -1,0 +1,22 @@
+# Etapa 1: build
+FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
+WORKDIR /app
+
+COPY ./src/CatFactsExplorer.sln .
+COPY ./src/CatFactsExplorer.Domain/CatFactsExplorer.Domain.csproj ./CatFactsExplorer.Domain/
+COPY ./src/CatFactsExplorer.Application/CatFactsExplorer.Application.csproj ./CatFactsExplorer.Application/
+COPY ./src/CatFactsExplorer.Infrastructure/CatFactsExplorer.Infrastructure.csproj ./CatFactsExplorer.Infrastructure/
+COPY ./src/CatFactsExplorer.Jobs/CatFactsExplorer.Jobs.csproj ./CatFactsExplorer.Jobs/
+COPY ./src/CatFactsExplorer.API/CatFactsExplorer.API.csproj ./CatFactsExplorer.API/
+COPY ./src/CatFactsExplorer.Worker/CatFactsExplorer.Worker.csproj ./CatFactsExplorer.Worker/
+
+RUN dotnet restore "./CatFactsExplorer.Worker/CatFactsExplorer.Worker.csproj"
+
+COPY ./src/ ./
+RUN dotnet publish "./CatFactsExplorer.Worker/CatFactsExplorer.Worker.csproj" -c Release -o /out
+
+# Etapa 2: runtime
+FROM mcr.microsoft.com/dotnet/aspnet:7.0
+WORKDIR /app
+COPY --from=build /out ./
+ENTRYPOINT ["dotnet", "CatFactsExplorer.Worker.dll"]

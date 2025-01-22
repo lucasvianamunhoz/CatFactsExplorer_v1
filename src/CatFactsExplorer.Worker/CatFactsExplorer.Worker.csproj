@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk.Worker">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>dotnet-CatFactsExplorer.Worker-f76eb1f0-ec78-46d2-8bed-6fc20879bc9c</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Hangfire.AspNetCore" Version="1.7.35" />
+    <PackageReference Include="Hangfire.Core" Version="1.7.35" />
+    <PackageReference Include="Hangfire.SqlServer" Version="1.7.35" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
+    <PackageReference Include="System.Net.Http.Json" Version="7.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CatFactsExplorer.Infrastructure\CatFactsExplorer.Infrastructure.csproj" />
+    <ProjectReference Include="..\CatFactsExplorer.Jobs\CatFactsExplorer.Jobs.csproj" />
+  </ItemGroup>
+</Project>
